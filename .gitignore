@@ -1,0 +1,8 @@
+/target/
+Cargo.lock
+.DS_Store
+.sqlx
+*.db
+*.db-shm
+*.db-wal
+/var/
