@@ -1,0 +1,179 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (optional, will use timestamp if not provided)'
+        required: false
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    name: Tests
+    uses: ./.github/workflows/test.yml
+
+  build:
+    name: Build Linux Binary
+    runs-on: ubuntu-latest
+    needs: [test]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+      
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      
+      - name: Build release binary
+        run: cargo build --release --verbose --target x86_64-unknown-linux-gnu
+      
+      - name: Strip debug symbols
+        run: strip target/x86_64-unknown-linux-gnu/release/warlock-gateway
+      
+      - name: Rename binary
+        run: mv target/x86_64-unknown-linux-gnu/release/warlock-gateway warlock-gateway-linux-x86_64
+      
+      - name: Generate SHA256 checksum
+        run: sha256sum warlock-gateway-linux-x86_64 > warlock-gateway-linux-x86_64.sha256
+      
+      - name: Display binary info
+        run: |
+          ls -lh warlock-gateway-linux-x86_64
+          file warlock-gateway-linux-x86_64
+          cat warlock-gateway-linux-x86_64.sha256
+      
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: warlock-gateway-linux-x86_64
+          path: |
+            warlock-gateway-linux-x86_64
+            warlock-gateway-linux-x86_64.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: warlock-gateway-linux-x86_64
+          path: ./artifacts
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ startsWith(github.ref, 'refs/tags/v') }}" = "true" ]; then
+            # Extract version from tag
+            VERSION=${GITHUB_REF#refs/tags/}
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          elif [ -n "${{ inputs.version }}" ]; then
+            # Use provided version from manual dispatch
+            VERSION=${{ inputs.version }}
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            # Generate dev version with timestamp
+            VERSION="dev-$(date +%Y%m%d-%H%M%S)"
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          fi
+          echo "Creating release: ${VERSION}"
+      
+      - name: List artifacts
+        run: |
+          echo "Artifacts to be released:"
+          ls -lah ./artifacts/
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
+          generate_release_notes: true
+          files: |
+            ./artifacts/warlock-gateway-linux-x86_64
+            ./artifacts/warlock-gateway-linux-x86_64.sha256
+          body: |
+            ## Installation
+
+            **Quick setup (recommended):**
+
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/TristanBlackwell/warlock-gateway/master/scripts/install.sh | bash -s ${{ steps.version.outputs.version }}
+            ```
+
+            Then run:
+            ```bash
+            warlock-gateway
+            ```
+
+            **Manual installation:**
+            
+            ```bash
+            # Download binary
+            wget https://github.com/TristanBlackwell/warlock-gateway/releases/download/${{ steps.version.outputs.version }}/warlock-gateway-linux-x86_64
+            
+            # Make executable
+            chmod +x warlock-gateway-linux-x86_64
+            
+            # Move to PATH (optional)
+            sudo mv warlock-gateway-linux-x86_64 /usr/local/bin/warlock-gateway
+            ```
+            
+            **Verify checksum:**
+            ```bash
+            wget https://github.com/TristanBlackwell/warlock-gateway/releases/download/${{ steps.version.outputs.version }}/warlock-gateway-linux-x86_64.sha256
+            sha256sum -c warlock-gateway-linux-x86_64.sha256
+            ```
+            
+            ### Running
+            
+            ```bash
+            warlock-gateway
+            ```
+            
+            ---
+            
+            **Full Changelog**: https://github.com/TristanBlackwell/warlock-gateway/compare/${{ github.event.before }}...${{ steps.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Release Summary
+        run: |
+          echo "✅ Release created successfully!"
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "Download: https://github.com/TristanBlackwell/warlock-gateway/releases/download/${{ steps.version.outputs.version }}/warlock-gateway-linux-x86_64"
+          echo ""
+          echo "Install on your Linux box:"
+          echo "curl -L https://github.com/TristanBlackwell/warlock-gateway/releases/download/${{ steps.version.outputs.version }}/warlock-gateway-linux-x86_64 -o warlock-gateway && chmod +x warlock-gateway"
