@@ -28,7 +28,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -36,12 +36,14 @@ jobs:
           targets: x86_64-unknown-linux-gnu
       
       - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2.9.0
         with:
           cache-on-failure: true
       
       - name: Build release binary
         run: cargo build --release --verbose --target x86_64-unknown-linux-gnu
+        env:
+          SQLX_OFFLINE: "true"
       
       - name: Strip debug symbols
         run: strip target/x86_64-unknown-linux-gnu/release/warlock-gateway
@@ -77,7 +79,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Fetch all history for changelog generation
       

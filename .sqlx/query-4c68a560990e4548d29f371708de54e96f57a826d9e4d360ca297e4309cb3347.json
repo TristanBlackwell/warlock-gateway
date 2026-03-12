@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE workers SET status = 'unhealthy' WHERE last_heartbeat < ? AND status = 'healthy'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "4c68a560990e4548d29f371708de54e96f57a826d9e4d360ca297e4309cb3347"
+}

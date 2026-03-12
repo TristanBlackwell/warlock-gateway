@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT v.vm_id as \"vm_id!\", w.ip_address as \"ip_address!\", w.status as \"status: WorkerStatus\"\n            FROM vms v\n            JOIN workers w ON v.worker_id = w.id\n            WHERE v.vm_id = ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "vm_id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "ip_address!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "status: WorkerStatus",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "952b03d92b1b42388cbe4e15da5f9727fc17139c80171b599d8dd28bfcb237bc"
+}

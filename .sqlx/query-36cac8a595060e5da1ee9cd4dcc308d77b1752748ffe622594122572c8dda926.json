@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE workers SET last_heartbeat = ?, status = 'healthy' WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "36cac8a595060e5da1ee9cd4dcc308d77b1752748ffe622594122572c8dda926"
+}

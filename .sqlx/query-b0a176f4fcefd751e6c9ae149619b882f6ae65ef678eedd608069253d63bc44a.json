@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO workers (id, ip_address, registered_at, last_heartbeat, status)\n            VALUES (?, ?, ?, ?, 'healthy')\n            ON CONFLICT(id) DO UPDATE SET\n                ip_address = excluded.ip_address,\n                last_heartbeat = excluded.last_heartbeat,\n                status = 'healthy'\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "b0a176f4fcefd751e6c9ae149619b882f6ae65ef678eedd608069253d63bc44a"
+}
