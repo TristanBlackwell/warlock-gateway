@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT vm_id as \"vm_id!\", worker_id as \"worker_id!\", created_at as \"created_at!\", vcpus, memory_mb FROM vms WHERE vm_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "vm_id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "worker_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "vcpus",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "memory_mb",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "2e4cc29cd48a1f9908a262ebc4fbbb6ab8d12ff29c8bf0067082f3b411373ca3"
+}

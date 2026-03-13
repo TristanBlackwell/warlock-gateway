@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT ip_address FROM workers WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "ip_address",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4349307fde8242272613a127b167abd53f1be110c042dfa0afddfb1b0d9e58c2"
+}

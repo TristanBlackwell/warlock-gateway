@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE workers \n            SET \n                total_vcpus = ?,\n                total_memory_mb = ?,\n                allocatable_memory_mb = ?,\n                allocated_vcpus = ?,\n                allocated_memory_mb = ?,\n                vm_count = ?,\n                version = ?,\n                copy_strategy = ?\n            WHERE id = ?\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 9
+    },
+    "nullable": []
+  },
+  "hash": "79e1492539d192630fab9d054447f9c4bde4419c5d582a49552c0067a4acd68b"
+}

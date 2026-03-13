@@ -40,6 +40,7 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         // VM endpoints
+        .route("/vm", post(api::vm::create))
         .route("/vm/{vm_id}/location", get(api::vm::get_location))
         .route("/vm/register", post(api::vm::register))
         .route("/vm/{vm_id}", delete(api::vm::deregister))

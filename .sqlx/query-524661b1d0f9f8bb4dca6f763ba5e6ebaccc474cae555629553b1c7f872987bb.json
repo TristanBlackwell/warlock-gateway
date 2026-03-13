@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO vms (vm_id, worker_id, created_at, vcpus, memory_mb) VALUES (?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "524661b1d0f9f8bb4dca6f763ba5e6ebaccc474cae555629553b1c7f872987bb"
+}

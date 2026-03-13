@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                UPDATE workers \n                SET \n                    allocated_vcpus = COALESCE(allocated_vcpus, 0) + ?,\n                    allocated_memory_mb = COALESCE(allocated_memory_mb, 0) + ?,\n                    vm_count = COALESCE(vm_count, 0) + 1\n                WHERE id = ?\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "766725a5f70e5d7c857c16c7ae7482c622d5d442600ca2ca21da3fbfa5798a56"
+}

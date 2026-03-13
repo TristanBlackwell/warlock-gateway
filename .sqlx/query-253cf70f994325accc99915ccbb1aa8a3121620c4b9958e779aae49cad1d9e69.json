@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT \n                id as \"id!\",\n                ip_address as \"ip_address!\",\n                status as \"status!: WorkerStatus\",\n                total_vcpus,\n                allocatable_memory_mb,\n                allocated_vcpus,\n                allocated_memory_mb,\n                vm_count\n            FROM workers\n            WHERE \n                status = 'healthy'\n                AND total_vcpus IS NOT NULL\n                AND allocatable_memory_mb IS NOT NULL\n                AND (total_vcpus - COALESCE(allocated_vcpus, 0)) >= ?\n                AND (allocatable_memory_mb - COALESCE(allocated_memory_mb, 0)) >= ?\n            ORDER BY \n                (allocatable_memory_mb - COALESCE(allocated_memory_mb, 0)) ASC,\n                (total_vcpus - COALESCE(allocated_vcpus, 0)) ASC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "ip_address!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "status!: WorkerStatus",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "total_vcpus",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "allocatable_memory_mb",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "allocated_vcpus",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "allocated_memory_mb",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "vm_count",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "253cf70f994325accc99915ccbb1aa8a3121620c4b9958e779aae49cad1d9e69"
+}
