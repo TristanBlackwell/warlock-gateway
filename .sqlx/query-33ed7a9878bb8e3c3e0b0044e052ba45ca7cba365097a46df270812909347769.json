@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT vm_id as \"vm_id!\", worker_id as \"worker_id!\", created_at as \"created_at!\", vcpus, memory_mb FROM vms WHERE vm_id = ?",
+  "query": "\n            SELECT \n                v.vm_id as \"vm_id!\", \n                v.worker_id as \"worker_id!\", \n                v.created_at as \"created_at!\", \n                v.vcpus, \n                v.memory_mb,\n                w.ip_address as \"ip_address!\"\n            FROM vms v\n            JOIN workers w ON v.worker_id = w.id\n            WHERE v.vm_id = ?\n            ",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,11 @@
         "name": "memory_mb",
         "ordinal": 4,
         "type_info": "Integer"
+      },
+      {
+        "name": "ip_address!",
+        "ordinal": 5,
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -37,8 +42,9 @@
       false,
       false,
       true,
-      true
+      true,
+      false
     ]
   },
-  "hash": "2e4cc29cd48a1f9908a262ebc4fbbb6ab8d12ff29c8bf0067082f3b411373ca3"
+  "hash": "33ed7a9878bb8e3c3e0b0044e052ba45ca7cba365097a46df270812909347769"
 }

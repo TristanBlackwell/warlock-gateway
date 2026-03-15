@@ -150,30 +150,73 @@ impl Registry {
 
     /// Deregister a VM and update worker capacity
     pub async fn deregister_vm(&self, vm_id: &str) -> Result<()> {
-        // Get VM details before deleting
-        let vm = sqlx::query!(
-            r#"SELECT vm_id as "vm_id!", worker_id as "worker_id!", created_at as "created_at!", vcpus, memory_mb FROM vms WHERE vm_id = ?"#,
+        // Get VM details and worker IP before deleting
+        let vm_info = sqlx::query!(
+            r#"
+            SELECT 
+                v.vm_id as "vm_id!", 
+                v.worker_id as "worker_id!", 
+                v.created_at as "created_at!", 
+                v.vcpus, 
+                v.memory_mb,
+                w.ip_address as "ip_address!"
+            FROM vms v
+            JOIN workers w ON v.worker_id = w.id
+            WHERE v.vm_id = ?
+            "#,
             vm_id
         )
         .fetch_optional(self.db.pool())
-        .await?
-        .map(|row| Vm {
-            vm_id: row.vm_id,
-            worker_id: row.worker_id,
-            created_at: row.created_at,
-            vcpus: row.vcpus,
-            memory_mb: row.memory_mb,
-        });
+        .await?;
         
-        if let Some(vm) = vm {
-            // Delete VM
+        if let Some(vm_info) = vm_info {
+            let worker_ip = vm_info.ip_address;
+            
+            // Call worker to delete the actual VM
+            let client = reqwest::Client::new();
+            let worker_url = format!("http://{}:3000/vm/{}", worker_ip, vm_id);
+            
+            match client
+                .delete(&worker_url)
+                .timeout(std::time::Duration::from_secs(30))
+                .send()
+                .await
+            {
+                Ok(response) => {
+                    if !response.status().is_success() {
+                        let status = response.status();
+                        let error = response
+                            .text()
+                            .await
+                            .unwrap_or_else(|_| "Unknown error".to_string());
+                        tracing::warn!(
+                            "Worker failed to delete VM {}: {} - {}",
+                            vm_id,
+                            status,
+                            error
+                        );
+                    } else {
+                        info!("VM {} deleted on worker {}", vm_id, worker_ip);
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!(
+                        "Failed to contact worker {} to delete VM {}: {:#}",
+                        worker_ip,
+                        vm_id,
+                        e
+                    );
+                }
+            }
+            
+            // Delete VM from registry
             sqlx::query!("DELETE FROM vms WHERE vm_id = ?", vm_id)
                 .execute(self.db.pool())
                 .await
                 .context("Failed to deregister VM")?;
             
             // Update worker utilization
-            if let (Some(vcpus), Some(memory_mb)) = (vm.vcpus, vm.memory_mb) {
+            if let (Some(vcpus), Some(memory_mb)) = (vm_info.vcpus, vm_info.memory_mb) {
                 sqlx::query!(
                     r#"
                     UPDATE workers 
@@ -185,7 +228,7 @@ impl Registry {
                     "#,
                     vcpus,
                     memory_mb,
-                    vm.worker_id
+                    vm_info.worker_id
                 )
                 .execute(self.db.pool())
                 .await
